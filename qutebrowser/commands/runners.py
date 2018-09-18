@@ -313,7 +313,7 @@ class CommandRunner(QObject):
         if record_last_command:
             last_command[cur_mode] = (text, count)
 
-        if record_macro and cur_mode == usertypes.KeyMode.normal:
+        if record_macro:
             macro_recorder = objreg.get('macro-recorder')
             macro_recorder.record_command(text, count)
 
