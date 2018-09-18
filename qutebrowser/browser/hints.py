@@ -633,6 +633,10 @@ class HintManager(QObject):
         # to make auto_follow == 'always' work
         self._handle_auto_follow()
 
+        macro_recorder = objreg.get('macro-recorder')
+        if macro_recorder.is_running():
+            macro_recorder.run_commands()
+
     @cmdutils.register(instance='hintmanager', scope='tab', name='hint',
                        star_args_optional=True, maxsplit=2)
     @cmdutils.argument('win_id', win_id=True)

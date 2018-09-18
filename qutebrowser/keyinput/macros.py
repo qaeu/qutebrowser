@@ -31,6 +31,7 @@ class MacroRecorder:
     Attributes:
         _macros: A list of commands for each macro register.
         _recording_macro: The register to which a macro is being recorded.
+        _running_macro: The register to which a macro is running
         _macro_count: The count passed to run_macro_command for each window.
                       Stored for use by run_macro, which may be called from
                       keyinput/modeparsers.py after a key input.
@@ -39,6 +40,7 @@ class MacroRecorder:
     def __init__(self):
         self._macros = {}
         self._recording_macro = None
+        self._running_macro = None
         self._macro_count = {}
 
     @cmdutils.register(instance='macro-recorder', name='record-macro')
@@ -88,10 +90,26 @@ class MacroRecorder:
         if register not in self._macros:
             raise cmdexc.CommandError(
                 "No macro recorded in '{}'!".format(register))
-        commandrunner = runners.CommandRunner(win_id)
+        self._running_macro = register
+        self._running_win_id = win_id
         for _ in range(self._macro_count[win_id]):
-            for cmd in self._macros[register]:
-                commandrunner.run_safely(*cmd)
+            self.run_commands()
+
+    def run_commands(self):
+        register = self._running_macro
+        cmd = self._macros[register].pop(0)
+        commandrunner = runners.CommandRunner(self._running_win_id)
+        commandrunner.run_safely(*cmd)
+        # Wait for callbacks on specified commands
+        if cmd[0] == "hint":
+            pass
+        elif len(self._macros[register]) > 0:
+            self.run_commands()
+        else:
+            self._running_macro = None
+
+    def is_running(self):
+        return (self._running_macro is not None)
 
     def record_command(self, text, count):
         """Record a command if a macro is being recorded."""
