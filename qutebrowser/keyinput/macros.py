@@ -93,6 +93,7 @@ class MacroRecorder:
                 "No macro recorded in '{}'!".format(register))
         self._running_macro = list(self._macros[register])
         self._running_win_id = win_id
+        self._macros["@"] = self._macros[register]
         for _ in range(self._macro_count[win_id]):
             self.run_commands()
 
